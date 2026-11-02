@@ -25,6 +25,11 @@ app.use((req, res, next) => {
     next();
 });
 
+// Root redirect to Swiss Grid React Workstation App
+app.get('/', (req, res) => {
+    res.redirect('/app/');
+});
+
 // Serve frontend assets
 app.use(express.static(path.join(__dirname, 'public')));
 

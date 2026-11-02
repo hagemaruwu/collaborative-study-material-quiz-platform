@@ -57,7 +57,8 @@ export default function UploadModal({ isOpen, onClose, onUpload, subjects }) {
       topic: topic.trim() || 'General Curriculum',
       summary: summary.trim() || 'Uploaded study document',
       fileName: file.name,
-      fileSize: file.size
+      fileSize: file.size,
+      file: file
     });
 
     onClose();

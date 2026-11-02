@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LandingPage from './pages/LandingPage';
@@ -15,6 +15,13 @@ import UploadModal from './components/UploadModal';
 import { ACADEMIC_SUBJECTS, INITIAL_DOCUMENTS } from './data/documents';
 import { INITIAL_QUIZZES, INITIAL_LEADERBOARD } from './data/quizzes';
 
+// Default role credentials mapped to db/seed.js
+const ROLE_CREDENTIALS = {
+  'Student/User': { username: 'student_aditya', password: 'Student@1234', srn: 'PES2UG24CS033' },
+  'Content Contributor / Quiz Creator': { username: 'prof_contributor', password: 'Contrib@1234', srn: 'PES2UG24CS056' },
+  'Administrator': { username: 'admin_user', password: 'Admin@1234', srn: 'PES2UG24CS003' }
+};
+
 export default function App() {
   // Navigation State
   const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'materials' | 'reader' | 'quizzes' | 'leaderboard' | 'audit' | 'about'
@@ -22,9 +29,9 @@ export default function App() {
   // Role & Authentication State
   const [activeRole, setActiveRole] = useState('Content Contributor / Quiz Creator');
   const [currentUser, setCurrentUser] = useState({
-    username: 'adityaraj',
+    username: 'prof_contributor',
     role: 'Content Contributor / Quiz Creator',
-    srn: 'PES2UG24CS033'
+    srn: 'PES2UG24CS056'
   });
 
   // Data States
@@ -111,21 +118,202 @@ export default function App() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [revisionTargetDoc, setRevisionTargetDoc] = useState(null);
 
+  // Authenticate against backend
+  const authenticateRole = useCallback(async (roleKey) => {
+    const creds = ROLE_CREDENTIALS[roleKey];
+    if (!creds) return;
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username: creds.username, password: creds.password })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser({
+          username: data.user.username,
+          role: data.user.role,
+          srn: creds.srn
+        });
+      }
+    } catch (e) {
+      console.warn('Backend login fallback:', e.message);
+    }
+  }, []);
+
+  // Fetch audit logs if admin
+  const fetchAuditLogs = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/audit-logs?limit=50', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.logs && Array.isArray(data.logs) && data.logs.length > 0) {
+          const mappedLogs = data.logs.map(l => ({
+            id: l.id,
+            action: l.action,
+            user: l.username || `User #${l.user_id}`,
+            ip: l.ip_address || '127.0.0.1',
+            details: l.details,
+            timestamp: l.created_at
+          }));
+          setAuditLogs(mappedLogs);
+        }
+      }
+    } catch (e) {
+      console.warn('Audit logs fetch fallback:', e.message);
+    }
+  }, []);
+
+  // Load backend data on startup
+  useEffect(() => {
+    // 1. Initial Login
+    authenticateRole(activeRole);
+
+    // 2. Fetch Subjects & Topics Hierarchy
+    fetch('/api/materials/hierarchy')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.subjects && Array.isArray(data.subjects) && data.subjects.length > 0) {
+          const serverSubjects = data.subjects.map(s => ({
+            id: s.code || `CS-${s.id}`,
+            dbId: s.id,
+            name: s.name,
+            topics: s.topics ? s.topics.map(t => t.name) : []
+          }));
+          // Merge avoiding duplicates
+          setSubjects(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const fresh = serverSubjects.filter(s => !existingIds.has(s.id));
+            return [...fresh, ...prev];
+          });
+        }
+      })
+      .catch(() => {});
+
+    // 3. Fetch Materials
+    fetch('/api/materials')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.materials && Array.isArray(data.materials) && data.materials.length > 0) {
+          const serverDocs = data.materials.map(m => ({
+            id: m.id,
+            subjectId: m.subject_code || 'CS-SE301',
+            topic: m.topic_name || 'Software Architecture',
+            title: m.title,
+            author: m.contributor_name || 'prof_contributor',
+            authorSrn: 'PES2UG24CS033',
+            version: 1,
+            updatedAt: m.updated_at || m.created_at,
+            rating: m.average_rating || 5.0,
+            ratingCount: m.rating_count || 1,
+            tags: ['EXAM SPEC', 'VERIFIED'],
+            summary: m.description || 'Curriculum resource module',
+            content: m.content || '',
+            history: [
+              {
+                version: 1,
+                author: m.contributor_name || 'prof_contributor',
+                timestamp: m.created_at,
+                summary: 'Initial document snapshot',
+                hash: 'init101'
+              }
+            ]
+          }));
+          setDocuments(prev => {
+            const existingIds = new Set(serverDocs.map(d => d.id));
+            const filteredFallback = prev.filter(d => !existingIds.has(d.id));
+            return [...serverDocs, ...filteredFallback];
+          });
+        }
+      })
+      .catch(() => {});
+
+    // 4. Fetch Quizzes
+    fetch('/api/quizzes')
+      .then(r => r.ok ? r.json() : null)
+      .then(async data => {
+        if (data && data.quizzes && Array.isArray(data.quizzes) && data.quizzes.length > 0) {
+          const loadedQuizzes = await Promise.all(
+            data.quizzes.map(async (q) => {
+              try {
+                const detailRes = await fetch(`/api/quizzes/${q.id}`);
+                if (detailRes.ok) {
+                  const detailData = await detailRes.json();
+                  const qz = detailData.quiz;
+                  return {
+                    id: qz.id,
+                    title: qz.title,
+                    subjectId: qz.subject_name || 'CS-SE301',
+                    topic: qz.topic_name || 'Software Architecture',
+                    duration_minutes: qz.duration_minutes || 10,
+                    questionsCount: qz.questions?.length || 0,
+                    questions: (qz.questions || []).map(qk => ({
+                      id: qk.id,
+                      question: qk.question_text,
+                      question_text: qk.question_text,
+                      type: qk.question_type,
+                      question_type: qk.question_type,
+                      options: qk.options || (qk.question_type === 'TRUE_FALSE' ? ['True', 'False'] : []),
+                      points: qk.points || 1,
+                      correct_answer: '' // Server authoritative (CSQP-SR-006)
+                    }))
+                  };
+                }
+              } catch (_) {}
+              return null;
+            })
+          );
+          const validQuizzes = loadedQuizzes.filter(Boolean);
+          if (validQuizzes.length > 0) {
+            setQuizzes(prev => {
+              const serverIds = new Set(validQuizzes.map(vq => vq.id));
+              const fallbacks = prev.filter(p => !serverIds.has(p.id));
+              return [...validQuizzes, ...fallbacks];
+            });
+          }
+        }
+      })
+      .catch(() => {});
+
+    // 5. Fetch Leaderboard
+    fetch('/api/quizzes/leaderboard')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.leaderboard && Array.isArray(data.leaderboard) && data.leaderboard.length > 0) {
+          const mappedLb = data.leaderboard.map(entry => ({
+            id: entry.id,
+            username: entry.username,
+            score: entry.score,
+            max_score: entry.max_score,
+            percentage: entry.percentage,
+            time_taken_seconds: entry.time_taken_seconds,
+            completed_at: entry.submitted_at
+          }));
+          setLeaderboard(mappedLb);
+        }
+      })
+      .catch(() => {});
+  }, [authenticateRole, activeRole]);
+
   // Navigate Handler
   const navigateTo = (page, docId = null) => {
     if (docId) {
       setActiveDocumentId(docId);
     }
     setCurrentPage(page);
+    if (page === 'audit' && activeRole === 'Administrator') {
+      fetchAuditLogs();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleRoleChange = (role) => {
+  const handleRoleChange = async (role) => {
     setActiveRole(role);
-    setCurrentUser((prev) => ({
-      ...prev,
-      role
-    }));
+    await authenticateRole(role);
+    if (role === 'Administrator') {
+      fetchAuditLogs();
+    }
   };
 
   // Filtered Documents
@@ -151,7 +339,7 @@ export default function App() {
   const activeDoc = documents.find((d) => d.id === activeDocumentId) || filteredDocuments[0] || documents[0];
 
   // Rate Document Handler (TC-MAT-07)
-  const handleRateDocument = (docId, stars) => {
+  const handleRateDocument = async (docId, stars) => {
     setUserRatings((prev) => ({
       ...prev,
       [docId]: stars
@@ -178,6 +366,26 @@ export default function App() {
       })
     );
 
+    // Call backend API with session cookie
+    try {
+      const res = await fetch(`/api/materials/${docId}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ rating: stars })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDocuments((prevDocs) =>
+          prevDocs.map((doc) =>
+            doc.id === docId
+              ? { ...doc, rating: data.average_rating, ratingCount: data.rating_count }
+              : doc
+          )
+        );
+      }
+    } catch (_) {}
+
     setAuditLogs((prev) => [
       {
         id: Date.now(),
@@ -192,7 +400,7 @@ export default function App() {
   };
 
   // Add Comment Handler (TC-MAT-08)
-  const handleAddComment = (docId, text) => {
+  const handleAddComment = async (docId, text) => {
     const newComment = {
       id: Date.now(),
       author: currentUser.username,
@@ -205,6 +413,16 @@ export default function App() {
       ...prev,
       [docId]: [...(prev[docId] || []), newComment]
     }));
+
+    // Call backend API
+    try {
+      await fetch(`/api/materials/${docId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ comment_text: text })
+      });
+    } catch (_) {}
 
     setAuditLogs((prev) => [
       {
@@ -226,7 +444,7 @@ export default function App() {
   };
 
   // Commit Revision (CSQP-F-011, 012)
-  const handleCommitRevision = ({ title, content, change_summary }) => {
+  const handleCommitRevision = async ({ title, content, change_summary }) => {
     const target = revisionTargetDoc || activeDoc;
     if (!target) return;
     const nextVer = target.version + 1;
@@ -257,6 +475,16 @@ export default function App() {
       })
     );
 
+    // Call backend API
+    try {
+      await fetch(`/api/materials/${target.id}/versions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ title, content, change_summary })
+      });
+    } catch (_) {}
+
     setAuditLogs((prev) => [
       {
         id: Date.now(),
@@ -271,7 +499,7 @@ export default function App() {
   };
 
   // Version Rollback (CSQP-F-013)
-  const handleRollback = (docId, targetVersion) => {
+  const handleRollback = async (docId, targetVersion) => {
     const doc = documents.find((d) => d.id === docId);
     if (!doc) return;
 
@@ -306,6 +534,14 @@ export default function App() {
       })
     );
 
+    // Call backend API
+    try {
+      await fetch(`/api/materials/${docId}/rollback/${targetVersion}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (_) {}
+
     setAuditLogs((prev) => [
       {
         id: Date.now(),
@@ -320,7 +556,7 @@ export default function App() {
   };
 
   // Upload Document Ingestion (TC-MAT-01)
-  const handleUploadDocument = ({ title, subjectId, topic, summary, fileName, fileSize }) => {
+  const handleUploadDocument = async ({ title, subjectId, topic, summary, fileName, fileSize, file }) => {
     const newId = Date.now();
     const nowIso = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 
@@ -352,6 +588,24 @@ export default function App() {
     setDocuments((prev) => [newDoc, ...prev]);
     navigateTo('reader', newId);
 
+    // If real file provided, send multipart FormData to backend
+    if (file) {
+      try {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', summary);
+        formData.append('subject_id', '1');
+        formData.append('topic_id', '2');
+        formData.append('file', file);
+
+        await fetch('/api/materials/upload', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData
+        });
+      } catch (_) {}
+    }
+
     setAuditLogs((prev) => [
       {
         id: Date.now(),
@@ -366,14 +620,50 @@ export default function App() {
   };
 
   // Quiz Attempt Evaluation (TC-QUIZ-04, 07)
-  const handleQuizSubmit = (quizId, result) => {
+  const handleQuizSubmit = async (quizId, clientResult, answers, timeSpent) => {
+    let authoritativeResult = null;
+
+    try {
+      const res = await fetch(`/api/quizzes/${quizId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          answers: answers || {},
+          time_taken_seconds: timeSpent || clientResult.timeSpent
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const r = data.result;
+        authoritativeResult = {
+          score: r.score,
+          maxScore: r.max_score,
+          percentage: r.percentage,
+          timeSpent: r.time_taken_seconds,
+          details: r.breakdown ? r.breakdown.map(b => ({
+            questionId: b.question_id,
+            question: b.question_text,
+            isCorrect: b.is_correct,
+            submitted: b.submitted_answer,
+            correct: b.correct_answer,
+            points: b.points_awarded,
+            maxPoints: b.max_points
+          })) : clientResult.details
+        };
+      }
+    } catch (_) {}
+
+    const finalRes = authoritativeResult || clientResult;
+
     const newAttemptEntry = {
       id: Date.now(),
       username: currentUser.username,
-      score: result.score,
-      max_score: result.maxScore,
-      percentage: Number(result.percentage),
-      time_taken_seconds: result.timeSpent,
+      score: finalRes.score,
+      max_score: finalRes.maxScore,
+      percentage: Number(finalRes.percentage),
+      time_taken_seconds: finalRes.timeSpent,
       completed_at: new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC'
     };
 
@@ -385,17 +675,39 @@ export default function App() {
       });
     });
 
+    // Refresh dynamic leaderboard from backend
+    try {
+      const lbRes = await fetch('/api/quizzes/leaderboard');
+      if (lbRes.ok) {
+        const lbData = await lbRes.json();
+        if (lbData.leaderboard && Array.isArray(lbData.leaderboard) && lbData.leaderboard.length > 0) {
+          const mappedLb = lbData.leaderboard.map(entry => ({
+            id: entry.id,
+            username: entry.username,
+            score: entry.score,
+            max_score: entry.max_score,
+            percentage: entry.percentage,
+            time_taken_seconds: entry.time_taken_seconds,
+            completed_at: entry.submitted_at
+          }));
+          setLeaderboard(mappedLb);
+        }
+      }
+    } catch (_) {}
+
     setAuditLogs((prev) => [
       {
         id: Date.now(),
         action: 'QUIZ_SUBMISSION',
         user: currentUser.username,
         ip: '127.0.0.1',
-        details: `Authoritative evaluation on Quiz #${quizId}: ${result.percentage}% in ${result.timeSpent}s`,
+        details: `Authoritative evaluation on Quiz #${quizId}: ${finalRes.percentage}% in ${finalRes.timeSpent}s`,
         timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC'
       },
       ...prev
     ]);
+
+    return authoritativeResult;
   };
 
   return (

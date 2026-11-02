@@ -59,7 +59,7 @@ export default function QuizPage({
     }));
   };
 
-  const handleCompleteQuiz = () => {
+  const handleCompleteQuiz = async () => {
     setQuizFinished(true);
     setQuizStarted(false);
 
@@ -69,27 +69,27 @@ export default function QuizPage({
     const details = [];
 
     questions.forEach((q) => {
-      maxScore += q.points;
+      maxScore += q.points || 1;
       const submitted = (answers[q.id] || '').toString().trim();
       const correct = (q.correct_answer || '').toString().trim();
-      const isCorrect = submitted.toLowerCase() === correct.toLowerCase();
-      if (isCorrect) score += q.points;
+      const isCorrect = correct ? submitted.toLowerCase() === correct.toLowerCase() : false;
+      if (isCorrect) score += q.points || 1;
 
       details.push({
         questionId: q.id,
-        question: q.question,
+        question: q.question || q.question_text,
         isCorrect,
         submitted,
         correct,
-        points: isCorrect ? q.points : 0,
-        maxPoints: q.points
+        points: isCorrect ? (q.points || 1) : 0,
+        maxPoints: q.points || 1
       });
     });
 
     const percentage = maxScore > 0 ? Number(((score / maxScore) * 100).toFixed(1)) : 0;
     const timeSpent = (selectedQuiz?.duration_minutes || 5) * 60 - secondsRemaining;
 
-    const result = {
+    let finalResult = {
       score,
       maxScore,
       percentage,
@@ -97,8 +97,18 @@ export default function QuizPage({
       details
     };
 
-    setQuizResult(result);
-    onQuizSubmit(selectedQuiz.id, result);
+    if (onQuizSubmit) {
+      try {
+        const serverResult = await onQuizSubmit(selectedQuiz.id, finalResult, answers, timeSpent);
+        if (serverResult) {
+          finalResult = serverResult;
+        }
+      } catch (err) {
+        console.warn('Backend evaluation fallback to client evaluation:', err);
+      }
+    }
+
+    setQuizResult(finalResult);
   };
 
   const formatTimer = (totalSec) => {
@@ -239,11 +249,11 @@ export default function QuizPage({
                 </div>
 
                 <p className="text-base font-sans text-[#111315] leading-relaxed">
-                  {q.question}
+                  {q.question || q.question_text}
                 </p>
 
                 {/* MCQ Options */}
-                {q.type === 'MCQ' && (
+                {(q.type || q.question_type) === 'MCQ' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     {q.options?.map((opt, oIdx) => (
                       <button
@@ -268,7 +278,7 @@ export default function QuizPage({
                 )}
 
                 {/* True/False */}
-                {q.type === 'TRUE_FALSE' && (
+                {(q.type || q.question_type) === 'TRUE_FALSE' && (
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     {['True', 'False'].map((tf) => (
                       <button
@@ -288,7 +298,7 @@ export default function QuizPage({
                 )}
 
                 {/* Fill in Blank */}
-                {q.type === 'FILL_BLANK' && (
+                {(q.type || q.question_type) === 'FILL_BLANK' && (
                   <div className="pt-2">
                     <input
                       type="text"
