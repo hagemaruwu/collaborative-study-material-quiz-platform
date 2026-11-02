@@ -17,23 +17,18 @@ import UserProfileModal from './components/UserProfileModal';
 import { ACADEMIC_SUBJECTS, INITIAL_DOCUMENTS } from './data/documents';
 import { INITIAL_QUIZZES, INITIAL_LEADERBOARD } from './data/quizzes';
 
-// Default role credentials mapped to db/seed.js
-const ROLE_CREDENTIALS = {
-  'Student/User': { username: 'student_aditya', password: 'Student@1234' },
-  'Content Contributor / Quiz Creator': { username: 'prof_contributor', password: 'Contrib@1234' },
-  'Administrator': { username: 'admin_user', password: 'Admin@1234' }
-};
-
 export default function App() {
   // Navigation State
   const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'materials' | 'reader' | 'quizzes' | 'leaderboard' | 'audit' | 'about'
 
   // Role & Authentication State
-  const [activeRole, setActiveRole] = useState('Content Contributor / Quiz Creator');
   const [currentUser, setCurrentUser] = useState({
-    username: 'prof_contributor',
-    role: 'Content Contributor / Quiz Creator'
+    id: 3,
+    username: 'student_aditya',
+    role: 'Student/User'
   });
+
+  const activeRole = currentUser?.role || 'Student/User';
 
   // Data States
   const [subjects, setSubjects] = useState(ACADEMIC_SUBJECTS);
@@ -121,26 +116,6 @@ export default function App() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [revisionTargetDoc, setRevisionTargetDoc] = useState(null);
 
-  // Authenticate against backend
-  const authenticateRole = useCallback(async (roleKey) => {
-    const creds = ROLE_CREDENTIALS[roleKey];
-    if (!creds) return;
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username: creds.username, password: creds.password })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCurrentUser(data.user);
-      }
-    } catch (e) {
-      console.warn('Backend login fallback:', e.message);
-    }
-  }, []);
-
   // Custom User Login Handler
   const handleLogin = async (username, password) => {
     try {
@@ -153,7 +128,6 @@ export default function App() {
       const data = await res.json();
       if (res.ok) {
         setCurrentUser(data.user);
-        setActiveRole(data.user.role);
         if (data.user.role === 'Administrator') {
           fetchAuditLogs();
         }
@@ -195,7 +169,6 @@ export default function App() {
       });
     } catch (_) {}
     setCurrentUser(null);
-    setActiveRole('Student/User');
   };
 
   // Fetch audit logs if admin
@@ -229,14 +202,9 @@ export default function App() {
       .then(data => {
         if (data && data.user) {
           setCurrentUser(data.user);
-          setActiveRole(data.user.role);
-        } else {
-          authenticateRole(activeRole);
         }
       })
-      .catch(() => {
-        authenticateRole(activeRole);
-      });
+      .catch(() => {});
 
     // 2. Fetch Subjects & Topics Hierarchy
     fetch('/api/materials/hierarchy')
@@ -375,14 +343,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleRoleChange = async (role) => {
-    setActiveRole(role);
-    await authenticateRole(role);
-    if (role === 'Administrator') {
-      fetchAuditLogs();
-    }
-  };
-
   // Filtered Documents
   const filteredDocuments = documents.filter((doc) => {
     if (selectedSubject !== 'ALL' && doc.subjectId !== selectedSubject) {
@@ -518,6 +478,10 @@ export default function App() {
       setIsAuthModalOpen(true);
       return;
     }
+    if (activeRole !== 'Content Contributor / Quiz Creator' && activeRole !== 'Administrator') {
+      alert('Permission Denied: Only Content Contributors and Administrators can edit study notes or submit revisions (CSQP-F-012).');
+      return;
+    }
     setRevisionTargetDoc(doc || activeDoc);
     setIsRevisionModalOpen(true);
   };
@@ -579,6 +543,14 @@ export default function App() {
 
   // Version Rollback (CSQP-F-013)
   const handleRollback = async (docId, targetVersion) => {
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    if (activeRole !== 'Content Contributor / Quiz Creator' && activeRole !== 'Administrator') {
+      alert('Permission Denied: Only Content Contributors and Administrators can rollback document versions (CSQP-F-013).');
+      return;
+    }
     const doc = documents.find((d) => d.id === docId);
     if (!doc) return;
 
@@ -636,6 +608,14 @@ export default function App() {
 
   // Upload Document Ingestion
   const handleUploadDocument = async ({ title, subjectId, topic, summary, fileName, fileSize, file }) => {
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    if (activeRole !== 'Content Contributor / Quiz Creator' && activeRole !== 'Administrator') {
+      alert('Permission Denied: Only Content Contributors and Administrators can upload study material (CSQP-F-003).');
+      return;
+    }
     const newId = Date.now();
     const nowIso = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 

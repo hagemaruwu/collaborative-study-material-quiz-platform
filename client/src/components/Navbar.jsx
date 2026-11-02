@@ -4,8 +4,6 @@ import { BookOpen, Award, Trophy, Shield, Info, FileUp, Menu, X, Check, User, Lo
 export default function Navbar({
   activePage,
   onNavigate,
-  activeRole,
-  onRoleChange,
   onOpenUpload,
   currentUser,
   onOpenAuth,
@@ -23,11 +21,9 @@ export default function Navbar({
     { id: 'about', label: 'About' },
   ];
 
-  const roles = [
-    { id: 'Student/User', label: 'Student' },
-    { id: 'Content Contributor / Quiz Creator', label: 'Contributor' },
-    { id: 'Administrator', label: 'Admin' }
-  ];
+  const roleLabel = currentUser?.role === 'Administrator' 
+    ? 'Admin' 
+    : (currentUser?.role === 'Content Contributor / Quiz Creator' ? 'Contributor' : 'Student');
 
   return (
     <header className="w-full bg-[#FFFFFF] border-b border-[#DDE1E5] sticky top-0 z-40 select-none">
@@ -73,42 +69,34 @@ export default function Navbar({
           })}
         </nav>
 
-        {/* Right Action & Auth Controls */}
+        {/* Right Action & Authenticated Controls */}
         <div className="hidden lg:flex items-center gap-3 font-sans text-xs">
-          {/* Role Quick Switcher */}
-          <div className="flex items-center border border-[#DDE1E5] bg-[#F8F9FA] p-0.5">
-            <span className="px-2 text-[11px] text-[#5A626A] uppercase font-medium">ROLE:</span>
-            {roles.map((r) => {
-              const isActive = activeRole === r.id;
-              return (
-                <button
-                  key={r.id}
-                  onClick={() => onRoleChange(r.id)}
-                  className={`px-2.5 py-1 text-xs transition-colors font-medium ${
-                    isActive
-                      ? 'bg-[#0047FF] text-[#FFFFFF] font-semibold'
-                      : 'text-[#5A626A] hover:text-[#111315]'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* User Account / Login Button */}
           {currentUser ? (
-            <button
-              onClick={onOpenProfile}
-              className="flex items-center gap-2 px-3 py-1.5 border border-[#DDE1E5] bg-[#FFFFFF] hover:border-[#0047FF] transition-colors group"
-            >
-              <div className="w-5 h-5 bg-[#0047FF] text-white flex items-center justify-center font-mono font-bold text-[10px]">
-                {currentUser.username.substring(0, 1).toUpperCase()}
-              </div>
-              <span className="font-semibold text-[#111315] group-hover:text-[#0047FF]">
-                {currentUser.username}
-              </span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onOpenProfile}
+                className="flex items-center gap-2 px-3 py-1.5 border border-[#DDE1E5] bg-[#FFFFFF] hover:border-[#0047FF] transition-colors group"
+                title="View Assessment History and Profile"
+              >
+                <div className="w-5 h-5 bg-[#0047FF] text-white flex items-center justify-center font-mono font-bold text-[10px]">
+                  {currentUser.username.substring(0, 1).toUpperCase()}
+                </div>
+                <span className="font-semibold text-[#111315] group-hover:text-[#0047FF]">
+                  {currentUser.username}
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 bg-[#F8F9FA] border border-[#DDE1E5] text-[#5A626A] uppercase font-bold">
+                  {roleLabel}
+                </span>
+              </button>
+
+              <button
+                onClick={onLogout}
+                className="p-1.5 border border-[#DDE1E5] text-[#5A626A] hover:text-[#D0021B] hover:border-[#D0021B] transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
           ) : (
             <button
               onClick={onOpenAuth}
@@ -172,7 +160,7 @@ export default function Navbar({
                   className="flex items-center gap-2 font-semibold text-xs text-[#111315]"
                 >
                   <User className="w-4 h-4 text-[#0047FF]" />
-                  <span>Profile: {currentUser.username}</span>
+                  <span>{currentUser.username} ({roleLabel})</span>
                 </button>
                 <button
                   onClick={() => {
@@ -196,25 +184,6 @@ export default function Navbar({
                 Sign In / Register
               </button>
             )}
-          </div>
-
-          <div className="pt-2 border-t border-[#DDE1E5]">
-            <span className="text-xs text-[#5A626A] uppercase block mb-1.5 font-medium">Switch Role:</span>
-            <div className="grid grid-cols-3 gap-1">
-              {roles.map((r) => (
-                <button
-                  key={r.id}
-                  onClick={() => onRoleChange(r.id)}
-                  className={`py-1 text-xs border text-center ${
-                    activeRole === r.id
-                      ? 'border-[#0047FF] bg-[#0047FF] text-white font-bold'
-                      : 'border-[#DDE1E5] text-[#5A626A]'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           <button
