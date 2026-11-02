@@ -23,13 +23,13 @@ export default function UploadModal({ isOpen, onClose, onUpload, subjects }) {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    // CSQP-F-003: 25MB constraint & extension validation
-    const maxSizeBytes = 25 * 1024 * 1024;
-    const allowedExtensions = ['.pdf', '.md', '.txt', '.doc', '.docx'];
+    // CSQP-F-003: 10MB constraint & extension validation (aligned with server multer limits)
+    const maxSizeBytes = 10 * 1024 * 1024;
+    const allowedExtensions = ['.pdf', '.md', '.txt'];
     const ext = selected.name.substring(selected.name.lastIndexOf('.')).toLowerCase();
 
     if (selected.size > maxSizeBytes) {
-      setError('File exceeds 25MB limit (TC-MAT-01 constraint violation)');
+      setError('File exceeds 10MB limit (CSQP server constraint)');
       setFile(null);
       return;
     }
@@ -150,12 +150,12 @@ export default function UploadModal({ isOpen, onClose, onUpload, subjects }) {
 
           <div>
             <label className="block text-[#8B949E] uppercase text-[10px] mb-1">
-              ATTACHMENT FILE (MAX 25MB : .PDF, .MD, .TXT):
+              ATTACHMENT FILE (MAX 10MB : .PDF, .MD, .TXT):
             </label>
             <input
               type="file"
               onChange={handleFileChange}
-              accept=".pdf,.md,.txt,.doc,.docx"
+              accept=".pdf,.md,.txt"
               className="w-full bg-[#0D1015] border border-[#262C36] text-[#E6E9EE] p-2 file:mr-3 file:py-1 file:px-2 file:border-0 file:text-xs file:font-mono file:bg-[#181D26] file:text-[#FF5500] hover:file:bg-[#262C36]"
               required
             />

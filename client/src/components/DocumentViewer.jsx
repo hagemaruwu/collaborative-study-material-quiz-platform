@@ -139,12 +139,13 @@ export default function DocumentViewer({
       </div>
 
       {/* Main Document Content Canvas */}
-      <article className="p-4 sm:p-8 max-w-4xl space-y-6 text-[#E6E9EE] leading-relaxed">
-        {/* Abstract / Summary Callout Block */}
-        <div className="border border-[#262C36] bg-[#13171F] p-4 font-mono text-xs text-[#8B949E]">
-          <span className="text-[#FF5500] font-bold block mb-1">EXECUTIVE SUMMARY:</span>
-          {document.summary}
-        </div>
+      <div className="flex-1 flex justify-center">
+        <article className="w-full max-w-4xl p-4 sm:p-8 space-y-6 text-[#E6E9EE] leading-relaxed">
+          {/* Abstract / Summary Callout Block */}
+          <div className="border border-[#262C36] bg-[#13171F] p-4 font-mono text-xs text-[#8B949E]">
+            <span className="text-[#FF5500] font-bold block mb-1">EXECUTIVE SUMMARY:</span>
+            {document.summary}
+          </div>
 
         {/* Render Content Blocks */}
         <div className="space-y-4 font-mono text-xs sm:text-sm">
@@ -205,9 +206,11 @@ export default function DocumentViewer({
           })}
         </div>
       </article>
+      </div>
 
       {/* Peer Review & Collaborative Discussion Section (TC-MAT-08) */}
       <section className="border-t border-[#262C36] bg-[#13171F] p-4 sm:p-6 mt-auto">
+        <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-[#FF5500]" />
@@ -261,6 +264,7 @@ export default function DocumentViewer({
             </button>
           </div>
         </form>
+        </div>
       </section>
     </main>
   );

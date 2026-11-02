@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TelemetryHeader from './components/TelemetryHeader';
 import NavigationSidebar from './components/NavigationSidebar';
 import DocumentViewer from './components/DocumentViewer';
 import WorkstationLedger from './components/WorkstationLedger';
+import AssessmentLab from './components/AssessmentLab';
+import StatusFooter from './components/StatusFooter';
 import RevisionModal from './components/RevisionModal';
 import UploadModal from './components/UploadModal';
 import PolicyModal from './components/PolicyModal';
@@ -19,6 +21,13 @@ export default function App() {
     role: 'Content Contributor / Quiz Creator',
     srn: 'PES2UG24CS033'
   });
+
+  // View Mode & Panel State (De-congestion Architecture)
+  const [activeView, setActiveView] = useState('reader'); // 'reader' | 'assessment'
+  const [isLeftOpen, setIsLeftOpen] = useState(true);
+  const [isRightOpen, setIsRightOpen] = useState(true);
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const prevPanelsState = useRef({ left: true, right: true });
 
   // Data States
   const [subjects, setSubjects] = useState(ACADEMIC_SUBJECTS);
@@ -105,7 +114,34 @@ export default function App() {
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
-  // Synchronize role change
+  // Global Hotkey Listener: 'z' / 'Z' toggles Focus Mode
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeTag = document.activeElement?.tagName?.toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea') return;
+
+      if (e.key === 'z' || e.key === 'Z') {
+        e.preventDefault();
+        toggleFocusMode();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFocusMode, isLeftOpen, isRightOpen]);
+
+  const toggleFocusMode = () => {
+    if (!isFocusMode) {
+      prevPanelsState.current = { left: isLeftOpen, right: isRightOpen };
+      setIsLeftOpen(false);
+      setIsRightOpen(false);
+      setIsFocusMode(true);
+    } else {
+      setIsLeftOpen(prevPanelsState.current.left);
+      setIsRightOpen(prevPanelsState.current.right);
+      setIsFocusMode(false);
+    }
+  };
+
   const handleRoleChange = (role) => {
     setActiveRole(role);
     setCurrentUser((prev) => ({
@@ -116,15 +152,12 @@ export default function App() {
 
   // Filtered Documents
   const filteredDocuments = documents.filter((doc) => {
-    // Subject filter
     if (selectedSubject !== 'ALL' && doc.subjectId !== selectedSubject) {
       return false;
     }
-    // Tag filter
     if (selectedTag !== 'ALL' && !doc.tags.includes(selectedTag)) {
       return false;
     }
-    // Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchTitle = doc.title.toLowerCase().includes(q);
@@ -139,7 +172,7 @@ export default function App() {
 
   const activeDoc = documents.find((d) => d.id === activeDocumentId) || filteredDocuments[0] || documents[0];
 
-  // Rating Submission Handler (TC-MAT-07: Single rating per user with duplicate update)
+  // Rating Submission Handler (TC-MAT-07)
   const handleRateDocument = (docId, stars) => {
     setUserRatings((prev) => ({
       ...prev,
@@ -167,7 +200,6 @@ export default function App() {
       })
     );
 
-    // Audit log entry
     setAuditLogs((prev) => [
       {
         id: Date.now(),
@@ -360,7 +392,6 @@ export default function App() {
       completed_at: new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC'
     };
 
-    // Update dynamic leaderboard: sorted by score descending, then by time ascending
     setLeaderboard((prev) => {
       const updated = [newAttemptEntry, ...prev];
       return updated.sort((a, b) => {
@@ -384,56 +415,84 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0D1015] text-[#E6E9EE] font-mono selection:bg-[#FF5500] selection:text-[#0D1015]">
-      {/* Top Industrial Telemetry Header */}
+      {/* Lean Single-Bar Command Header (48px) */}
       <TelemetryHeader
         activeRole={activeRole}
         onRoleChange={handleRoleChange}
         activeDocument={activeDoc}
+        activeView={activeView}
+        onViewChange={setActiveView}
+        isLeftOpen={isLeftOpen}
+        onToggleLeft={() => setIsLeftOpen((prev) => !prev)}
+        isRightOpen={isRightOpen}
+        onToggleRight={() => setIsRightOpen((prev) => !prev)}
+        isFocusMode={isFocusMode}
+        onToggleFocus={toggleFocusMode}
         onOpenUpload={() => setIsUploadModalOpen(true)}
         onOpenRevision={() => setIsRevisionModalOpen(true)}
         onOpenPolicy={() => setIsPolicyModalOpen(true)}
         onOpenPrivacy={() => setIsPrivacyModalOpen(true)}
       />
 
-      {/* 3-Column Workstation Layout */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden h-[calc(100vh-85px)]">
-        {/* Column 1: Navigation, Search & Academic Taxonomy */}
-        <NavigationSidebar
-          subjects={subjects}
-          documents={filteredDocuments}
-          activeDocumentId={activeDoc?.id}
-          onSelectDocument={setActiveDocumentId}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedSubject={selectedSubject}
-          onSelectSubject={setSelectedSubject}
-          selectedTag={selectedTag}
-          onSelectTag={setSelectedTag}
-        />
+      {/* Main Workspace Body */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden h-[calc(100vh-76px)]">
+        {activeView === 'reader' ? (
+          <>
+            {/* Column 1: Navigation Sidebar (Collapsible to 48px rail) */}
+            <NavigationSidebar
+              isOpen={isLeftOpen}
+              onToggle={() => setIsLeftOpen((prev) => !prev)}
+              subjects={subjects}
+              documents={filteredDocuments}
+              activeDocumentId={activeDoc?.id}
+              onSelectDocument={setActiveDocumentId}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedSubject={selectedSubject}
+              onSelectSubject={setSelectedSubject}
+              selectedTag={selectedTag}
+              onSelectTag={setSelectedTag}
+            />
 
-        {/* Column 2: Document Reading Canvas & Discussion Stream */}
-        <DocumentViewer
-          document={activeDoc}
-          onRate={handleRateDocument}
-          userRating={activeDoc ? userRatings[activeDoc.id] : 0}
-          hasRated={activeDoc ? userRatings[activeDoc.id] !== undefined : false}
-          comments={activeDoc ? documentComments[activeDoc.id] || [] : []}
-          onAddComment={handleAddComment}
-          currentUser={currentUser}
-        />
+            {/* Column 2: Centered Document Reading Canvas */}
+            <DocumentViewer
+              document={activeDoc}
+              onRate={handleRateDocument}
+              userRating={activeDoc ? userRatings[activeDoc.id] : 0}
+              hasRated={activeDoc ? userRatings[activeDoc.id] !== undefined : false}
+              comments={activeDoc ? documentComments[activeDoc.id] || [] : []}
+              onAddComment={handleAddComment}
+              currentUser={currentUser}
+            />
 
-        {/* Column 3: Inspection Ledger (Versions, Assessments, Audit Log) */}
-        <WorkstationLedger
-          document={activeDoc}
-          onRollback={handleRollback}
-          canRollback={activeRole === 'Content Contributor / Quiz Creator' || activeRole === 'Administrator'}
-          quizzes={quizzes}
-          leaderboard={leaderboard}
-          onQuizSubmit={handleQuizSubmit}
-          auditLogs={auditLogs}
-          currentUser={currentUser}
-        />
+            {/* Column 3: Workstation Ledger (Collapsible to 48px rail) */}
+            <WorkstationLedger
+              isOpen={isRightOpen}
+              onToggle={() => setIsRightOpen((prev) => !prev)}
+              document={activeDoc}
+              onRollback={handleRollback}
+              canRollback={activeRole === 'Content Contributor / Quiz Creator' || activeRole === 'Administrator'}
+              quizzes={quizzes}
+              leaderboard={leaderboard}
+              onQuizSubmit={handleQuizSubmit}
+              auditLogs={auditLogs}
+              currentUser={currentUser}
+            />
+          </>
+        ) : (
+          /* Full Assessment Lab View (Wide, Un-congested) */
+          <AssessmentLab
+            quizzes={quizzes}
+            leaderboard={leaderboard}
+            onQuizSubmit={handleQuizSubmit}
+            currentUser={currentUser}
+            onExitToReader={() => setActiveView('reader')}
+          />
+        )}
       </div>
+
+      {/* Lean Status Footer Strip (28px) */}
+      <StatusFooter />
 
       {/* Modals & Dialogs */}
       <RevisionModal
