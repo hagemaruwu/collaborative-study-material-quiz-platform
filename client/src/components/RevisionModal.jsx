@@ -36,80 +36,80 @@ export default function RevisionModal({ isOpen, onClose, onSubmit, document }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-80">
-      <div className="w-full max-w-2xl bg-[#13171F] border border-[#262C36] flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-40">
+      <div className="w-full max-w-2xl bg-[#FFFFFF] border border-[#DDE1E5] flex flex-col max-h-[90vh] shadow-none">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[#262C36] bg-[#0D1015]">
+        <div className="flex items-center justify-between p-5 border-b border-[#DDE1E5] bg-[#F8F9FA]">
           <div className="flex items-center gap-2">
-            <GitCommit className="w-4 h-4 text-[#FF5500]" />
-            <h3 className="text-sm font-heading font-bold text-[#E6E9EE]">
-              COMMIT COLLABORATIVE REVISION (v{(document?.version || 1) + 1})
+            <GitCommit className="w-5 h-5 text-[#0047FF]" />
+            <h3 className="text-base font-heading font-bold text-[#111315]">
+              Submit Collaborative Revision (v{(document?.version || 1) + 1})
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-[#8B949E] hover:text-[#E6E9EE] p-1"
+            className="text-[#5A626A] hover:text-[#111315] p-1"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto flex-1 font-mono text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1 font-sans text-xs">
           <div>
-            <label className="block text-[#8B949E] uppercase text-[10px] mb-1">
-              DOCUMENT TITLE:
+            <label className="block text-[#5A626A] uppercase text-[11px] font-semibold mb-1 font-mono">
+              Document Title:
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-[#0D1015] border border-[#262C36] text-[#E6E9EE] p-2 focus:outline-none focus:border-[#FF5500]"
+              className="w-full bg-[#F8F9FA] border border-[#DDE1E5] text-[#111315] p-2.5 text-sm focus:outline-none focus:border-[#0047FF]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-[#8B949E] uppercase text-[10px] mb-1">
-              CHANGE LOG SUMMARY (MANDATORY AUDIT RECORD):
+            <label className="block text-[#5A626A] uppercase text-[11px] font-semibold mb-1 font-mono">
+              Changelog Summary (Audit Record):
             </label>
             <input
               type="text"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder="e.g. Corrected boundary condition for source vertex s in recurrence proof"
-              className="w-full bg-[#0D1015] border border-[#262C36] text-[#E6E9EE] p-2 focus:outline-none focus:border-[#FF5500]"
+              className="w-full bg-[#F8F9FA] border border-[#DDE1E5] text-[#111315] p-2.5 text-sm focus:outline-none focus:border-[#0047FF]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-[#8B949E] uppercase text-[10px] mb-1">
-              TECHNICAL CONTENT (MARKDOWN & LATEX FORMULAS):
+            <label className="block text-[#5A626A] uppercase text-[11px] font-semibold mb-1 font-mono">
+              Technical Content (Markdown &amp; Formulas):
             </label>
             <textarea
-              rows={12}
+              rows={10}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full bg-[#0D1015] border border-[#262C36] text-[#E6E9EE] p-3 leading-relaxed focus:outline-none focus:border-[#FF5500]"
+              className="w-full bg-[#F8F9FA] border border-[#DDE1E5] text-[#111315] p-3 text-sm font-mono leading-relaxed focus:outline-none focus:border-[#0047FF]"
               required
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#262C36]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#DDE1E5]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-[#262C36] text-[#8B949E] hover:text-[#E6E9EE]"
+              className="px-4 py-2 border border-[#DDE1E5] text-[#5A626A] hover:text-[#111315] text-xs font-semibold"
             >
-              CANCEL
+              Cancel
             </button>
             <button
               type="submit"
               disabled={!summary.trim()}
-              className="px-4 py-2 bg-[#FF5500] text-[#0D1015] font-bold hover:bg-[#E04B00] disabled:opacity-50"
+              className="px-5 py-2 bg-[#0047FF] text-white text-xs font-semibold hover:bg-[#0039CC] disabled:opacity-50 transition-colors"
             >
-              COMMIT REVISION
+              Commit Revision
             </button>
           </div>
         </form>

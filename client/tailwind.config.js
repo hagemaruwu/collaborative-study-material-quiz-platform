@@ -8,33 +8,34 @@ export default {
     extend: {
       colors: {
         bg: {
-          DEFAULT: '#0D1015',
-          elevated: '#13171F',
-          subtle: '#181D26',
+          DEFAULT: '#F8F9FA',
+          surface: '#FFFFFF',
+          subtle: '#EDF0F3',
         },
         text: {
-          DEFAULT: '#E6E9EE',
-          muted: '#8B949E',
-          dim: '#485260',
+          DEFAULT: '#111315',
+          muted: '#5A626A',
+          dim: '#8E959E',
         },
         accent: {
-          DEFAULT: '#FF5500',
-          hover: '#E04B00',
+          DEFAULT: '#0047FF',
+          hover: '#0039CC',
         },
         border: {
-          DEFAULT: '#262C36',
-          bright: '#3D4654',
+          DEFAULT: '#DDE1E5',
+          dark: '#B0B8C1',
         }
       },
       fontFamily: {
-        heading: ['Syne', 'sans-serif'],
+        heading: ['"Space Grotesk"', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
-        body: ['"JetBrains Mono"', 'monospace'],
       },
       borderRadius: {
         none: '0px',
-        DEFAULT: '0px',
-        sm: '0px',
+        DEFAULT: '2px',
+        sm: '2px',
         md: '2px',
         lg: '2px',
       },

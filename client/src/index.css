@@ -4,17 +4,17 @@
 
 @layer base {
   * {
-    border-color: #262C36;
+    border-color: #DDE1E5;
   }
   
   body {
-    background-color: #0D1015;
-    color: #E6E9EE;
-    font-family: 'JetBrains Mono', monospace;
+    background-color: #F8F9FA;
+    color: #111315;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
   }
 }
 
@@ -24,17 +24,17 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0D1015;
+  background: #F8F9FA;
 }
 ::-webkit-scrollbar-thumb {
-  background: #262C36;
+  background: #DDE1E5;
   border-radius: 0px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3D4654;
+  background: #B0B8C1;
 }
 
-/* Hairline borders */
-.border-grid {
-  border-color: #262C36;
+/* Swiss Grid Utilities */
+.swiss-border {
+  border-color: #DDE1E5;
 }

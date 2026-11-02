@@ -23,7 +23,7 @@ export default function UploadModal({ isOpen, onClose, onUpload, subjects }) {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    // CSQP-F-003: 10MB constraint & extension validation (aligned with server multer limits)
+    // CSQP-F-003: 10MB constraint & extension validation
     const maxSizeBytes = 10 * 1024 * 1024;
     const allowedExtensions = ['.pdf', '.md', '.txt'];
     const ext = selected.name.substring(selected.name.lastIndexOf('.')).toLowerCase();
@@ -64,54 +64,54 @@ export default function UploadModal({ isOpen, onClose, onUpload, subjects }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-80">
-      <div className="w-full max-w-lg bg-[#13171F] border border-[#262C36] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-40">
+      <div className="w-full max-w-lg bg-[#FFFFFF] border border-[#DDE1E5] flex flex-col shadow-none">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[#262C36] bg-[#0D1015]">
+        <div className="flex items-center justify-between p-5 border-b border-[#DDE1E5] bg-[#F8F9FA]">
           <div className="flex items-center gap-2">
-            <Upload className="w-4 h-4 text-[#FF5500]" />
-            <h3 className="text-sm font-heading font-bold text-[#E6E9EE]">
-              UPLOAD STUDY DOCUMENT (TC-MAT-01)
+            <Upload className="w-5 h-5 text-[#0047FF]" />
+            <h3 className="text-base font-heading font-bold text-[#111315]">
+              Upload Study Document (TC-MAT-01)
             </h3>
           </div>
-          <button onClick={onClose} className="text-[#8B949E] hover:text-[#E6E9EE] p-1">
-            <X className="w-4 h-4" />
+          <button onClick={onClose} className="text-[#5A626A] hover:text-[#111315] p-1">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="p-3 bg-[#181D26] border-b border-[#ef4444] text-[#ef4444] text-xs font-mono flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <div className="p-3 bg-[#FFF1F2] border-b border-[#F43F5E] text-[#BE123C] text-xs font-sans flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 text-[#E11D48]" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-3 font-mono text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 font-sans text-xs">
           <div>
-            <label className="block text-[#8B949E] uppercase text-[10px] mb-1">
-              MATERIAL TITLE:
+            <label className="block text-[#5A626A] uppercase text-[11px] font-semibold mb-1 font-mono">
+              Material Title:
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Byzantine Generals Problem and Practical Paxos Proofs"
-              className="w-full bg-[#0D1015] border border-[#262C36] text-[#E6E9EE] p-2 focus:outline-none focus:border-[#FF5500]"
+              className="w-full bg-[#F8F9FA] border border-[#DDE1E5] text-[#111315] p-2.5 text-sm focus:outline-none focus:border-[#0047FF]"
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[#8B949E] uppercase text-[10px] mb-1">
-                SUBJECT:
+              <label className="block text-[#5A626A] uppercase text-[11px] font-semibold mb-1 font-mono">
+                Course Subject:
               </label>
               <select
                 value={subjectId}
                 onChange={(e) => setSubjectId(e.target.value)}
-                className="w-full bg-[#0D1015] border border-[#262C36] text-[#E6E9EE] p-2 focus:outline-none focus:border-[#FF5500]"
+                className="w-full bg-[#F8F9FA] border border-[#DDE1E5] text-[#111315] p-2.5 text-xs focus:outline-none focus:border-[#0047FF]"
               >
                 {subjects.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -122,46 +122,46 @@ export default function UploadModal({ isOpen, onClose, onUpload, subjects }) {
             </div>
 
             <div>
-              <label className="block text-[#8B949E] uppercase text-[10px] mb-1">
-                TOPIC SPECIFICATION:
+              <label className="block text-[#5A626A] uppercase text-[11px] font-semibold mb-1 font-mono">
+                Topic Specification:
               </label>
               <input
                 type="text"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="e.g. Distributed Consensus"
-                className="w-full bg-[#0D1015] border border-[#262C36] text-[#E6E9EE] p-2 focus:outline-none focus:border-[#FF5500]"
+                className="w-full bg-[#F8F9FA] border border-[#DDE1E5] text-[#111315] p-2.5 text-xs focus:outline-none focus:border-[#0047FF]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-[#8B949E] uppercase text-[10px] mb-1">
-              METADATA SUMMARY:
+            <label className="block text-[#5A626A] uppercase text-[11px] font-semibold mb-1 font-mono">
+              Metadata Summary:
             </label>
             <input
               type="text"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder="Brief summary of mathematical formulation or lecture notes"
-              className="w-full bg-[#0D1015] border border-[#262C36] text-[#E6E9EE] p-2 focus:outline-none focus:border-[#FF5500]"
+              className="w-full bg-[#F8F9FA] border border-[#DDE1E5] text-[#111315] p-2.5 text-xs focus:outline-none focus:border-[#0047FF]"
             />
           </div>
 
           <div>
-            <label className="block text-[#8B949E] uppercase text-[10px] mb-1">
-              ATTACHMENT FILE (MAX 10MB : .PDF, .MD, .TXT):
+            <label className="block text-[#5A626A] uppercase text-[11px] font-semibold mb-1 font-mono">
+              Attachment File (Max 10MB : .PDF, .MD, .TXT):
             </label>
             <input
               type="file"
               onChange={handleFileChange}
               accept=".pdf,.md,.txt"
-              className="w-full bg-[#0D1015] border border-[#262C36] text-[#E6E9EE] p-2 file:mr-3 file:py-1 file:px-2 file:border-0 file:text-xs file:font-mono file:bg-[#181D26] file:text-[#FF5500] hover:file:bg-[#262C36]"
+              className="w-full bg-[#F8F9FA] border border-[#DDE1E5] text-[#111315] p-2 text-xs file:mr-3 file:py-1 file:px-2.5 file:border-0 file:text-xs file:font-sans file:bg-[#0047FF] file:text-white file:font-semibold hover:file:bg-[#0039CC]"
               required
             />
             {file && (
-              <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[#22c55e]">
-                <FileCheck className="w-3.5 h-3.5" />
+              <div className="mt-2 flex items-center gap-1.5 text-xs text-[#0047FF] font-medium font-mono">
+                <FileCheck className="w-4 h-4" />
                 <span>
                   {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)
                 </span>
@@ -169,20 +169,20 @@ export default function UploadModal({ isOpen, onClose, onUpload, subjects }) {
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#262C36]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#DDE1E5]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-1.5 border border-[#262C36] text-[#8B949E] hover:text-[#E6E9EE]"
+              className="px-4 py-2 border border-[#DDE1E5] text-[#5A626A] hover:text-[#111315] text-xs font-semibold"
             >
-              CANCEL
+              Cancel
             </button>
             <button
               type="submit"
               disabled={!file}
-              className="px-4 py-1.5 bg-[#FF5500] text-[#0D1015] font-bold hover:bg-[#E04B00] disabled:opacity-50"
+              className="px-5 py-2 bg-[#0047FF] text-white text-xs font-semibold hover:bg-[#0039CC] disabled:opacity-50 transition-colors"
             >
-              INGEST DOCUMENT
+              Ingest Document
             </button>
           </div>
         </form>

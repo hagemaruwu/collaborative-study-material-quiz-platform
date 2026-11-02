@@ -1,19 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
-import TelemetryHeader from './components/TelemetryHeader';
-import NavigationSidebar from './components/NavigationSidebar';
-import DocumentViewer from './components/DocumentViewer';
-import WorkstationLedger from './components/WorkstationLedger';
-import AssessmentLab from './components/AssessmentLab';
-import StatusFooter from './components/StatusFooter';
+import React, { useState } from 'react';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import LandingPage from './pages/LandingPage';
+import MaterialsPage from './pages/MaterialsPage';
+import ReaderPage from './pages/ReaderPage';
+import QuizPage from './pages/QuizPage';
+import LeaderboardPage from './pages/LeaderboardPage';
+import AuditPage from './pages/AuditPage';
+import AboutPage from './pages/AboutPage';
+
 import RevisionModal from './components/RevisionModal';
 import UploadModal from './components/UploadModal';
-import PolicyModal from './components/PolicyModal';
-import PrivacyModal from './components/PrivacyModal';
 
 import { ACADEMIC_SUBJECTS, INITIAL_DOCUMENTS } from './data/documents';
 import { INITIAL_QUIZZES, INITIAL_LEADERBOARD } from './data/quizzes';
 
 export default function App() {
+  // Navigation State
+  const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'materials' | 'reader' | 'quizzes' | 'leaderboard' | 'audit' | 'about'
+
   // Role & Authentication State
   const [activeRole, setActiveRole] = useState('Content Contributor / Quiz Creator');
   const [currentUser, setCurrentUser] = useState({
@@ -22,13 +27,6 @@ export default function App() {
     srn: 'PES2UG24CS033'
   });
 
-  // View Mode & Panel State (De-congestion Architecture)
-  const [activeView, setActiveView] = useState('reader'); // 'reader' | 'assessment'
-  const [isLeftOpen, setIsLeftOpen] = useState(true);
-  const [isRightOpen, setIsRightOpen] = useState(true);
-  const [isFocusMode, setIsFocusMode] = useState(false);
-  const prevPanelsState = useRef({ left: true, right: true });
-
   // Data States
   const [subjects, setSubjects] = useState(ACADEMIC_SUBJECTS);
   const [documents, setDocuments] = useState(INITIAL_DOCUMENTS);
@@ -36,7 +34,7 @@ export default function App() {
   const [quizzes, setQuizzes] = useState(INITIAL_QUIZZES);
   const [leaderboard, setLeaderboard] = useState(INITIAL_LEADERBOARD);
 
-  // Search & Filter States
+  // Search & Filter States for Materials
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('ALL');
   const [selectedTag, setSelectedTag] = useState('ALL');
@@ -108,38 +106,18 @@ export default function App() {
     }
   ]);
 
-  // Modal Visibility States
+  // Modals State
   const [isRevisionModalOpen, setIsRevisionModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
-  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [revisionTargetDoc, setRevisionTargetDoc] = useState(null);
 
-  // Global Hotkey Listener: 'z' / 'Z' toggles Focus Mode
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      const activeTag = document.activeElement?.tagName?.toLowerCase();
-      if (activeTag === 'input' || activeTag === 'textarea') return;
-
-      if (e.key === 'z' || e.key === 'Z') {
-        e.preventDefault();
-        toggleFocusMode();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFocusMode, isLeftOpen, isRightOpen]);
-
-  const toggleFocusMode = () => {
-    if (!isFocusMode) {
-      prevPanelsState.current = { left: isLeftOpen, right: isRightOpen };
-      setIsLeftOpen(false);
-      setIsRightOpen(false);
-      setIsFocusMode(true);
-    } else {
-      setIsLeftOpen(prevPanelsState.current.left);
-      setIsRightOpen(prevPanelsState.current.right);
-      setIsFocusMode(false);
+  // Navigate Handler
+  const navigateTo = (page, docId = null) => {
+    if (docId) {
+      setActiveDocumentId(docId);
     }
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleRoleChange = (role) => {
@@ -172,7 +150,7 @@ export default function App() {
 
   const activeDoc = documents.find((d) => d.id === activeDocumentId) || filteredDocuments[0] || documents[0];
 
-  // Rating Submission Handler (TC-MAT-07)
+  // Rate Document Handler (TC-MAT-07)
   const handleRateDocument = (docId, stars) => {
     setUserRatings((prev) => ({
       ...prev,
@@ -213,7 +191,7 @@ export default function App() {
     ]);
   };
 
-  // Collaborative Comment Submission (TC-MAT-08)
+  // Add Comment Handler (TC-MAT-08)
   const handleAddComment = (docId, text) => {
     const newComment = {
       id: Date.now(),
@@ -241,10 +219,17 @@ export default function App() {
     ]);
   };
 
-  // Collaborative Revision Submission (CSQP-F-011, CSQP-F-012, TC-COL-01)
+  // Open Revision Modal
+  const handleOpenRevisionModal = (doc) => {
+    setRevisionTargetDoc(doc || activeDoc);
+    setIsRevisionModalOpen(true);
+  };
+
+  // Commit Revision (CSQP-F-011, 012)
   const handleCommitRevision = ({ title, content, change_summary }) => {
-    if (!activeDoc) return;
-    const nextVer = activeDoc.version + 1;
+    const target = revisionTargetDoc || activeDoc;
+    if (!target) return;
+    const nextVer = target.version + 1;
     const nowIso = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
     const fakeHash = Math.random().toString(16).substring(2, 9);
 
@@ -258,7 +243,7 @@ export default function App() {
 
     setDocuments((prevDocs) =>
       prevDocs.map((d) => {
-        if (d.id === activeDoc.id) {
+        if (d.id === target.id) {
           return {
             ...d,
             version: nextVer,
@@ -278,14 +263,14 @@ export default function App() {
         action: 'COLLABORATIVE_REVISION',
         user: currentUser.username,
         ip: '127.0.0.1',
-        details: `Created revision v${nextVer} on #${activeDoc.id}: ${change_summary}`,
+        details: `Created revision v${nextVer} on #${target.id}: ${change_summary}`,
         timestamp: nowIso
       },
       ...prev
     ]);
   };
 
-  // Version Rollback Handler (CSQP-F-013)
+  // Version Rollback (CSQP-F-013)
   const handleRollback = (docId, targetVersion) => {
     const doc = documents.find((d) => d.id === docId);
     if (!doc) return;
@@ -334,7 +319,7 @@ export default function App() {
     ]);
   };
 
-  // Upload Document Ingestion Handler (TC-MAT-01)
+  // Upload Document Ingestion (TC-MAT-01)
   const handleUploadDocument = ({ title, subjectId, topic, summary, fileName, fileSize }) => {
     const newId = Date.now();
     const nowIso = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
@@ -365,7 +350,7 @@ export default function App() {
     };
 
     setDocuments((prev) => [newDoc, ...prev]);
-    setActiveDocumentId(newId);
+    navigateTo('reader', newId);
 
     setAuditLogs((prev) => [
       {
@@ -380,7 +365,7 @@ export default function App() {
     ]);
   };
 
-  // Quiz Attempt Evaluation Handler (TC-QUIZ-04, TC-QUIZ-07)
+  // Quiz Attempt Evaluation (TC-QUIZ-04, 07)
   const handleQuizSubmit = (quizId, result) => {
     const newAttemptEntry = {
       id: Date.now(),
@@ -414,92 +399,96 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0D1015] text-[#E6E9EE] font-mono selection:bg-[#FF5500] selection:text-[#0D1015]">
-      {/* Lean Single-Bar Command Header (48px) */}
-      <TelemetryHeader
+    <div className="min-h-screen flex flex-col bg-[#F8F9FA] text-[#111315] font-sans selection:bg-[#0047FF] selection:text-white">
+      {/* Top Navbar */}
+      <Navbar
+        activePage={currentPage}
+        onNavigate={(page) => navigateTo(page)}
         activeRole={activeRole}
         onRoleChange={handleRoleChange}
-        activeDocument={activeDoc}
-        activeView={activeView}
-        onViewChange={setActiveView}
-        isLeftOpen={isLeftOpen}
-        onToggleLeft={() => setIsLeftOpen((prev) => !prev)}
-        isRightOpen={isRightOpen}
-        onToggleRight={() => setIsRightOpen((prev) => !prev)}
-        isFocusMode={isFocusMode}
-        onToggleFocus={toggleFocusMode}
         onOpenUpload={() => setIsUploadModalOpen(true)}
-        onOpenRevision={() => setIsRevisionModalOpen(true)}
-        onOpenPolicy={() => setIsPolicyModalOpen(true)}
-        onOpenPrivacy={() => setIsPrivacyModalOpen(true)}
       />
 
-      {/* Main Workspace Body */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden h-[calc(100vh-76px)]">
-        {activeView === 'reader' ? (
-          <>
-            {/* Column 1: Navigation Sidebar (Collapsible to 48px rail) */}
-            <NavigationSidebar
-              isOpen={isLeftOpen}
-              onToggle={() => setIsLeftOpen((prev) => !prev)}
-              subjects={subjects}
-              documents={filteredDocuments}
-              activeDocumentId={activeDoc?.id}
-              onSelectDocument={setActiveDocumentId}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedSubject={selectedSubject}
-              onSelectSubject={setSelectedSubject}
-              selectedTag={selectedTag}
-              onSelectTag={setSelectedTag}
-            />
-
-            {/* Column 2: Centered Document Reading Canvas */}
-            <DocumentViewer
-              document={activeDoc}
-              onRate={handleRateDocument}
-              userRating={activeDoc ? userRatings[activeDoc.id] : 0}
-              hasRated={activeDoc ? userRatings[activeDoc.id] !== undefined : false}
-              comments={activeDoc ? documentComments[activeDoc.id] || [] : []}
-              onAddComment={handleAddComment}
-              currentUser={currentUser}
-            />
-
-            {/* Column 3: Workstation Ledger (Collapsible to 48px rail) */}
-            <WorkstationLedger
-              isOpen={isRightOpen}
-              onToggle={() => setIsRightOpen((prev) => !prev)}
-              document={activeDoc}
-              onRollback={handleRollback}
-              canRollback={activeRole === 'Content Contributor / Quiz Creator' || activeRole === 'Administrator'}
-              quizzes={quizzes}
-              leaderboard={leaderboard}
-              onQuizSubmit={handleQuizSubmit}
-              auditLogs={auditLogs}
-              currentUser={currentUser}
-            />
-          </>
-        ) : (
-          /* Full Assessment Lab View (Wide, Un-congested) */
-          <AssessmentLab
-            quizzes={quizzes}
-            leaderboard={leaderboard}
-            onQuizSubmit={handleQuizSubmit}
-            currentUser={currentUser}
-            onExitToReader={() => setActiveView('reader')}
+      {/* Main Page Content Body */}
+      <main className="flex-1">
+        {currentPage === 'home' && (
+          <LandingPage
+            onNavigate={(page) => navigateTo(page)}
+            subjects={subjects}
+            documentsCount={documents.length}
+            quizzesCount={quizzes.length}
           />
         )}
-      </div>
 
-      {/* Lean Status Footer Strip (28px) */}
-      <StatusFooter />
+        {currentPage === 'materials' && (
+          <MaterialsPage
+            subjects={subjects}
+            documents={filteredDocuments}
+            onSelectDocument={(id) => navigateTo('reader', id)}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedSubject={selectedSubject}
+            onSelectSubject={setSelectedSubject}
+            selectedTag={selectedTag}
+            onSelectTag={setSelectedTag}
+            onOpenUpload={() => setIsUploadModalOpen(true)}
+            onOpenRevision={handleOpenRevisionModal}
+          />
+        )}
 
-      {/* Modals & Dialogs */}
+        {currentPage === 'reader' && (
+          <ReaderPage
+            document={activeDoc}
+            onBack={() => navigateTo('materials')}
+            onRate={handleRateDocument}
+            userRating={activeDoc ? userRatings[activeDoc.id] : 0}
+            hasRated={activeDoc ? userRatings[activeDoc.id] !== undefined : false}
+            comments={activeDoc ? documentComments[activeDoc.id] || [] : []}
+            onAddComment={handleAddComment}
+            currentUser={currentUser}
+            onRollback={handleRollback}
+            canRollback={activeRole === 'Content Contributor / Quiz Creator' || activeRole === 'Administrator'}
+            onOpenRevision={handleOpenRevisionModal}
+          />
+        )}
+
+        {currentPage === 'quizzes' && (
+          <QuizPage
+            quizzes={quizzes}
+            onQuizSubmit={handleQuizSubmit}
+            currentUser={currentUser}
+            onNavigate={(page) => navigateTo(page)}
+          />
+        )}
+
+        {currentPage === 'leaderboard' && (
+          <LeaderboardPage
+            leaderboard={leaderboard}
+            currentUser={currentUser}
+            onNavigate={(page) => navigateTo(page)}
+          />
+        )}
+
+        {currentPage === 'audit' && (
+          <AuditPage
+            auditLogs={auditLogs}
+          />
+        )}
+
+        {currentPage === 'about' && (
+          <AboutPage />
+        )}
+      </main>
+
+      {/* Institutional Footer */}
+      <Footer onNavigate={(page) => navigateTo(page)} />
+
+      {/* Modals */}
       <RevisionModal
         isOpen={isRevisionModalOpen}
         onClose={() => setIsRevisionModalOpen(false)}
         onSubmit={handleCommitRevision}
-        document={activeDoc}
+        document={revisionTargetDoc || activeDoc}
       />
 
       <UploadModal
@@ -507,16 +496,6 @@ export default function App() {
         onClose={() => setIsUploadModalOpen(false)}
         onUpload={handleUploadDocument}
         subjects={subjects}
-      />
-
-      <PolicyModal
-        isOpen={isPolicyModalOpen}
-        onClose={() => setIsPolicyModalOpen(false)}
-      />
-
-      <PrivacyModal
-        isOpen={isPrivacyModalOpen}
-        onClose={() => setIsPrivacyModalOpen(false)}
       />
     </div>
   );
