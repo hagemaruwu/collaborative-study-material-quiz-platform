@@ -48,6 +48,9 @@ app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'Endpoint not found' });
     }
+    if (req.path.startsWith('/app')) {
+        return res.sendFile(path.join(__dirname, 'public', 'app', 'index.html'));
+    }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
