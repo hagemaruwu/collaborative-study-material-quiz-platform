@@ -36,7 +36,7 @@ export default function MaterialsPage({
       <div className="border border-[#DDE1E5] bg-[#FFFFFF] p-6 sm:p-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="text-xs font-mono text-[#0047FF] font-semibold mb-1">
-            MODULE 01 : STUDY REPOSITORY
+            OPEN STUDY REPOSITORY
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold font-heading text-[#111315]">
             Curriculum Study Notes &amp; Specifications

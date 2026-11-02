@@ -12,13 +12,13 @@ export default function LeaderboardPage({
       <div className="border border-[#DDE1E5] bg-[#FFFFFF] p-6 sm:p-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="text-xs font-mono text-[#0047FF] font-semibold mb-1">
-            MODULE 04 : PERFORMANCE RANKINGS
+            GLOBAL RANKINGS
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold font-heading text-[#111315]">
-            Institutional Student Leaderboard (TC-QUIZ-07)
+            Student Assessment Leaderboard
           </h1>
           <p className="text-sm text-[#5A626A] mt-1 max-w-2xl">
-            Real-time assessment rankings across PES University curriculum modules. Attempts are ordered primarily by highest percentage and tie-broken by lowest elapsed duration.
+            Real-time rankings across curriculum assessments. Scores are ranked primarily by highest score and tie-broken by lowest completion time.
           </p>
         </div>
 

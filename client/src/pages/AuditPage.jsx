@@ -8,13 +8,13 @@ export default function AuditPage({ auditLogs }) {
       <div className="border border-[#DDE1E5] bg-[#FFFFFF] p-6 sm:p-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="text-xs font-mono text-[#0047FF] font-semibold mb-1">
-            MODULE 05 : SECURITY &amp; INTEGRITY
+            SECURITY &amp; INTEGRITY
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold font-heading text-[#111315]">
-            Cryptographic Audit Trail (TC-SEC-01)
+            Cryptographic Audit Trail
           </h1>
           <p className="text-sm text-[#5A626A] mt-1 max-w-2xl">
-            Immutable system event ledger. In accordance with security requirement CSQP-SR-001, all credentials and secrets are stripped prior to write operations.
+            Immutable platform event ledger. Sensitive credentials and secrets are stripped prior to write operations to maintain complete data privacy.
           </p>
         </div>
 
@@ -32,7 +32,7 @@ export default function AuditPage({ auditLogs }) {
         </div>
         <div className="border border-[#DDE1E5] bg-[#FFFFFF] p-4 space-y-1">
           <span className="text-[#5A626A] block text-[11px] uppercase font-mono">Session Security:</span>
-          <p className="font-semibold text-[#111315]">Immediate Invalidation on Logout (CSQP-SR-005)</p>
+          <p className="font-semibold text-[#111315]">Immediate Invalidation on Logout</p>
         </div>
         <div className="border border-[#DDE1E5] bg-[#FFFFFF] p-4 space-y-1">
           <span className="text-[#5A626A] block text-[11px] uppercase font-mono">Database Transactions:</span>

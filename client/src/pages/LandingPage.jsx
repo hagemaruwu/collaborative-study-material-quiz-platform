@@ -26,7 +26,7 @@ export default function LandingPage({
         <div className="max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#F8F9FA] border border-[#DDE1E5] text-xs font-mono text-[#5A626A]">
             <span className="w-2 h-2 bg-[#0047FF]"></span>
-            <span>PES UNIVERSITY | DEPARTMENT OF COMPUTER SCIENCE &amp; ENGINEERING</span>
+            <span>OPEN ACADEMIC PLATFORM | COMPUTER SCIENCE &amp; ENGINEERING</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-heading text-[#111315] tracking-tight leading-tight">
@@ -34,7 +34,7 @@ export default function LandingPage({
           </h1>
 
           <p className="text-base sm:text-lg text-[#5A626A] font-sans leading-relaxed">
-            An open academic portal designed for decentralized lecture note sharing, multi-contributor version control, and timed curriculum assessments. Built by Team 16 for Software Engineering Part-2.
+            An open academic portal designed for sharing verified lecture notes, collaborating on multi-author version revisions, and preparing through timed curriculum self-assessments.
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2 font-sans text-sm">
@@ -56,7 +56,7 @@ export default function LandingPage({
               onClick={() => onNavigate('about')}
               className="flex items-center gap-1.5 px-4 py-2.5 text-[#5A626A] hover:text-[#111315] font-medium transition-colors"
             >
-              <span>About Team 16 &amp; Policies</span>
+              <span>About Platform &amp; Mission</span>
             </button>
           </div>
         </div>
@@ -67,13 +67,13 @@ export default function LandingPage({
         <div className="flex items-center justify-between border-b border-[#DDE1E5] pb-3">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold font-heading text-[#111315]">
-              Platform Modules
+              Platform Capabilities
             </h2>
             <p className="text-xs sm:text-sm text-[#5A626A]">
               Select a section to browse resources, evaluate knowledge, or inspect system integrity.
             </p>
           </div>
-          <span className="text-xs font-mono text-[#5A626A]">SWISS GRID SPECIFICATION</span>
+          <span className="text-xs font-mono text-[#5A626A]">ACADEMIC SUITE</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -86,7 +86,7 @@ export default function LandingPage({
               <div className="w-10 h-10 bg-[#F8F9FA] border border-[#DDE1E5] flex items-center justify-center text-[#0047FF] group-hover:bg-[#0047FF] group-hover:text-white transition-colors">
                 <BookOpen className="w-5 h-5" />
               </div>
-              <span className="text-xs font-mono text-[#5A626A]">MODULE 01</span>
+              <span className="text-xs font-mono text-[#5A626A]">STUDY REPOSITORY</span>
             </div>
             <h3 className="text-lg font-bold font-heading text-[#111315] group-hover:text-[#0047FF] transition-colors">
               Curriculum Study Repository
@@ -109,16 +109,16 @@ export default function LandingPage({
               <div className="w-10 h-10 bg-[#F8F9FA] border border-[#DDE1E5] flex items-center justify-center text-[#0047FF] group-hover:bg-[#0047FF] group-hover:text-white transition-colors">
                 <GitBranch className="w-5 h-5" />
               </div>
-              <span className="text-xs font-mono text-[#5A626A]">MODULE 02</span>
+              <span className="text-xs font-mono text-[#5A626A]">VERSION CONTROL</span>
             </div>
             <h3 className="text-lg font-bold font-heading text-[#111315] group-hover:text-[#0047FF] transition-colors">
               Collaborative Versioning &amp; Rollback
             </h3>
             <p className="text-sm text-[#5A626A] leading-relaxed">
-              Inspect multi-author revision snapshots (v3, v2, v1) with commit SHA hashes and changelog diffs. Restore previous authoritative revisions with one click.
+              Inspect multi-author revision snapshots with commit hashes and changelog diffs. Restore previous authoritative revisions with one click.
             </p>
             <div className="flex items-center text-xs font-semibold text-[#0047FF] pt-2">
-              <span>Inspect Version History (CSQP-F-013)</span>
+              <span>Inspect Version History &amp; Diffs</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
             </div>
           </div>
@@ -132,7 +132,7 @@ export default function LandingPage({
               <div className="w-10 h-10 bg-[#F8F9FA] border border-[#DDE1E5] flex items-center justify-center text-[#0047FF] group-hover:bg-[#0047FF] group-hover:text-white transition-colors">
                 <Award className="w-5 h-5" />
               </div>
-              <span className="text-xs font-mono text-[#5A626A]">MODULE 03</span>
+              <span className="text-xs font-mono text-[#5A626A]">ASSESSMENTS</span>
             </div>
             <h3 className="text-lg font-bold font-heading text-[#111315] group-hover:text-[#0047FF] transition-colors">
               Timed Curriculum Assessments
@@ -155,10 +155,10 @@ export default function LandingPage({
               <div className="w-10 h-10 bg-[#F8F9FA] border border-[#DDE1E5] flex items-center justify-center text-[#0047FF] group-hover:bg-[#0047FF] group-hover:text-white transition-colors">
                 <Trophy className="w-5 h-5" />
               </div>
-              <span className="text-xs font-mono text-[#5A626A]">MODULE 04</span>
+              <span className="text-xs font-mono text-[#5A626A]">RANKINGS</span>
             </div>
             <h3 className="text-lg font-bold font-heading text-[#111315] group-hover:text-[#0047FF] transition-colors">
-              Institutional Leaderboard &amp; Audit Trail
+              Student Leaderboard &amp; Audit Trail
             </h3>
             <p className="text-sm text-[#5A626A] leading-relaxed">
               Track top student scores and completion times across subjects. Audit all platform activity through cryptographically chained, tamper-proof security records.
@@ -177,7 +177,7 @@ export default function LandingPage({
           <h2 className="text-lg font-bold font-heading text-[#111315]">
             Curriculum Courses Covered
           </h2>
-          <span className="text-xs text-[#5A626A] font-mono">SE PART-2 SPECIFICATION</span>
+          <span className="text-xs text-[#5A626A] font-mono">CORE CURRICULUM</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -207,17 +207,17 @@ export default function LandingPage({
             <span>Strict 3-Layered Architecture</span>
           </div>
           <p className="text-[#5A626A] leading-relaxed">
-            Presentation, Service, and DAO layers decoupled through explicit interfaces (I1, I2) preventing architectural erosion.
+            Presentation, Service, and Data layers decoupled through explicit interfaces preventing architectural drift and ensuring high reliability.
           </p>
         </div>
 
         <div className="border border-[#DDE1E5] bg-[#FFFFFF] p-5 space-y-2">
           <div className="flex items-center gap-2 text-[#0047FF] font-semibold">
             <CheckCircle2 className="w-4 h-4" />
-            <span>Anti-Tamper Quiz Evaluation</span>
+            <span>Authoritative Quiz Evaluation</span>
           </div>
           <p className="text-[#5A626A] leading-relaxed">
-            Answer keys remain strictly on the server (CSQP-SR-006). Client requests receive questions stripped of answers.
+            Answer keys remain strictly on the server. Client requests receive questions stripped of answers to prevent tampering.
           </p>
         </div>
 
@@ -227,7 +227,7 @@ export default function LandingPage({
             <span>Cryptographic Audit Logging</span>
           </div>
           <p className="text-[#5A626A] leading-relaxed">
-            Every critical state mutation is hashed into a SHA-256 sequential audit chain with zero plaintext credentials (CSQP-SR-001).
+            Every critical state mutation is hashed into a sequential SHA-256 audit chain with credentials stripped prior to write.
           </p>
         </div>
       </section>

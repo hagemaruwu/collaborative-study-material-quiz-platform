@@ -16,7 +16,7 @@ export default function Navbar({
     { id: 'quizzes', label: 'Quizzes' },
     { id: 'leaderboard', label: 'Leaderboard' },
     { id: 'audit', label: 'Audit Trail' },
-    { id: 'about', label: 'About Team 16' },
+    { id: 'about', label: 'About' },
   ];
 
   const roles = [
@@ -40,11 +40,11 @@ export default function Navbar({
             <div className="font-heading font-bold text-base text-[#111315] tracking-tight leading-none flex items-center gap-2">
               <span>CSQP</span>
               <span className="text-[11px] font-sans font-medium px-1.5 py-0.5 bg-[#F8F9FA] border border-[#DDE1E5] text-[#5A626A]">
-                PES UNIVERSITY
+                OPEN ACADEMY
               </span>
             </div>
             <p className="text-[11px] font-sans text-[#5A626A] mt-0.5">
-              Team 16 Academic Platform
+              Collaborative Knowledge Hub
             </p>
           </div>
         </div>

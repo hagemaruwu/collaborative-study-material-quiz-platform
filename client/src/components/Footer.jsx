@@ -12,10 +12,10 @@ export default function Footer({ onNavigate }) {
             </div>
             <div>
               <span className="font-heading font-bold text-sm text-[#111315]">
-                Collaborative Study Material &amp; Quiz Platform (CSQP)
+                Collaborative Study Material &amp; Quiz Platform
               </span>
               <p className="text-[11px] text-[#5A626A]">
-                PES University | Department of Computer Science &amp; Engineering | Team 16
+                Open academic repository for course notes, versioned revisions, and timed self-assessments
               </p>
             </div>
           </div>
@@ -23,12 +23,12 @@ export default function Footer({ onNavigate }) {
           <div className="flex items-center gap-4 text-xs font-mono">
             <div className="flex items-center gap-1.5 text-[#0047FF]">
               <ShieldCheck className="w-4 h-4" />
-              <span>26/26 BACKEND TESTS PASSING</span>
+              <span>SYSTEM OPERATIONAL</span>
             </div>
             <span>|</span>
             <div className="flex items-center gap-1.5 text-[#5A626A]">
               <Activity className="w-3.5 h-3.5 text-[#0047FF]" />
-              <span>LATENCY: 0.15ms [TC-PERF-01]</span>
+              <span>SERVER LATENCY: &lt;1ms</span>
             </div>
           </div>
         </div>
@@ -42,21 +42,21 @@ export default function Footer({ onNavigate }) {
               Study Notes
             </button>
             <button onClick={() => onNavigate('quizzes')} className="hover:text-[#0047FF] transition-colors">
-              Curriculum Quizzes
+              Assessments
             </button>
             <button onClick={() => onNavigate('leaderboard')} className="hover:text-[#0047FF] transition-colors">
               Leaderboard
             </button>
             <button onClick={() => onNavigate('audit')} className="hover:text-[#0047FF] transition-colors">
-              Security Audit
+              Audit Trail
             </button>
             <button onClick={() => onNavigate('about')} className="hover:text-[#0047FF] transition-colors">
-              Team 16 &amp; Policies
+              About Platform
             </button>
           </div>
 
           <div>
-            <span>Software Engineering Mini-Project Part-2. All rights reserved.</span>
+            <span>&copy; {new Date().getFullYear()} CSQP Platform. All rights reserved.</span>
           </div>
         </div>
       </div>

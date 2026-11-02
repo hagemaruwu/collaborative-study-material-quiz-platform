@@ -72,7 +72,7 @@ export default function UploadModal({ isOpen, onClose, onUpload, subjects }) {
           <div className="flex items-center gap-2">
             <Upload className="w-5 h-5 text-[#0047FF]" />
             <h3 className="text-base font-heading font-bold text-[#111315]">
-              Upload Study Document (TC-MAT-01)
+              Upload Study Document
             </h3>
           </div>
           <button onClick={onClose} className="text-[#5A626A] hover:text-[#111315] p-1">

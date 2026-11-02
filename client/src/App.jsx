@@ -17,9 +17,9 @@ import { INITIAL_QUIZZES, INITIAL_LEADERBOARD } from './data/quizzes';
 
 // Default role credentials mapped to db/seed.js
 const ROLE_CREDENTIALS = {
-  'Student/User': { username: 'student_aditya', password: 'Student@1234', srn: 'PES2UG24CS033' },
-  'Content Contributor / Quiz Creator': { username: 'prof_contributor', password: 'Contrib@1234', srn: 'PES2UG24CS056' },
-  'Administrator': { username: 'admin_user', password: 'Admin@1234', srn: 'PES2UG24CS003' }
+  'Student/User': { username: 'student_aditya', password: 'Student@1234' },
+  'Content Contributor / Quiz Creator': { username: 'prof_contributor', password: 'Contrib@1234' },
+  'Administrator': { username: 'admin_user', password: 'Admin@1234' }
 };
 
 export default function App() {
@@ -30,8 +30,7 @@ export default function App() {
   const [activeRole, setActiveRole] = useState('Content Contributor / Quiz Creator');
   const [currentUser, setCurrentUser] = useState({
     username: 'prof_contributor',
-    role: 'Content Contributor / Quiz Creator',
-    srn: 'PES2UG24CS056'
+    role: 'Content Contributor / Quiz Creator'
   });
 
   // Data States
@@ -85,14 +84,14 @@ export default function App() {
     ]
   });
 
-  // Tamper-Proof Audit Logs (TC-SEC-01)
+  // Tamper-Proof Audit Logs
   const [auditLogs, setAuditLogs] = useState([
     {
       id: 1,
       action: 'INIT_SYSTEM',
       user: 'SYSTEM',
       ip: '127.0.0.1',
-      details: 'Node CSQP-16 initialized with SQLite schema and strict security headers',
+      details: 'Platform initialized with SQLite schema and strict security headers',
       timestamp: '2026-10-28 08:00:00 UTC'
     },
     {
@@ -133,8 +132,7 @@ export default function App() {
         const data = await res.json();
         setCurrentUser({
           username: data.user.username,
-          role: data.user.role,
-          srn: creds.srn
+          role: data.user.role
         });
       }
     } catch (e) {
@@ -202,7 +200,6 @@ export default function App() {
             topic: m.topic_name || 'Software Architecture',
             title: m.title,
             author: m.contributor_name || 'prof_contributor',
-            authorSrn: 'PES2UG24CS033',
             version: 1,
             updatedAt: m.updated_at || m.created_at,
             rating: m.average_rating || 5.0,
@@ -338,7 +335,7 @@ export default function App() {
 
   const activeDoc = documents.find((d) => d.id === activeDocumentId) || filteredDocuments[0] || documents[0];
 
-  // Rate Document Handler (TC-MAT-07)
+  // Rate Document Handler
   const handleRateDocument = async (docId, stars) => {
     setUserRatings((prev) => ({
       ...prev,
@@ -399,7 +396,7 @@ export default function App() {
     ]);
   };
 
-  // Add Comment Handler (TC-MAT-08)
+  // Add Comment Handler
   const handleAddComment = async (docId, text) => {
     const newComment = {
       id: Date.now(),
@@ -555,7 +552,7 @@ export default function App() {
     ]);
   };
 
-  // Upload Document Ingestion (TC-MAT-01)
+  // Upload Document Ingestion
   const handleUploadDocument = async ({ title, subjectId, topic, summary, fileName, fileSize, file }) => {
     const newId = Date.now();
     const nowIso = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
@@ -566,14 +563,13 @@ export default function App() {
       topic,
       title,
       author: currentUser.username,
-      authorSrn: currentUser.srn,
       version: 1,
       updatedAt: nowIso,
       rating: 5.0,
       ratingCount: 1,
       tags: ['EXAM SPEC', 'VERIFIED'],
       summary,
-      content: `## Ingested Study Material: ${title}\n\nDocument File: ${fileName} (${(fileSize / (1024 * 1024)).toFixed(2)} MB)\nSubject: ${subjectId} - ${topic}\nIngestion Timestamp: ${nowIso}\nAuthor Attribution: ${currentUser.username} (${currentUser.srn})\n\n### Theoretical Summary\n${summary}\n\n\`\`\`text\n// File Ingestion Metadata\nPayload Size: ${fileSize} bytes\nMIME Classification: Validated PDF/Document\nSecurity Audit: Passed Virus & Buffer Boundary Check\n\`\`\``,
+      content: `## Ingested Study Material: ${title}\n\nDocument File: ${fileName} (${(fileSize / (1024 * 1024)).toFixed(2)} MB)\nSubject: ${subjectId} - ${topic}\nIngestion Timestamp: ${nowIso}\nAuthor Attribution: ${currentUser.username}\n\n### Theoretical Summary\n${summary}\n\n\`\`\`text\n// File Ingestion Metadata\nPayload Size: ${fileSize} bytes\nMIME Classification: Validated PDF/Document\nSecurity Audit: Passed Virus & Buffer Boundary Check\n\`\`\``,
       history: [
         {
           version: 1,
@@ -619,7 +615,7 @@ export default function App() {
     ]);
   };
 
-  // Quiz Attempt Evaluation (TC-QUIZ-04, 07)
+  // Quiz Attempt Evaluation
   const handleQuizSubmit = async (quizId, clientResult, answers, timeSpent) => {
     let authoritativeResult = null;
 

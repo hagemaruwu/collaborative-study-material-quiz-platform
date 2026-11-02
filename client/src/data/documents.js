@@ -12,7 +12,6 @@ export const INITIAL_DOCUMENTS = [
     topic: 'Dynamic Programming',
     title: 'Optimal Substructure & Bellman-Ford Shortest Path Recurrence',
     author: 'Aditya Raj',
-    authorSrn: 'PES2UG24CS033',
     version: 3,
     updatedAt: '2026-10-28 14:10:20 UTC',
     rating: 4.9,
@@ -89,7 +88,6 @@ In distance-vector routing protocols (such as RIP based on Bellman-Ford), conver
     topic: 'Raft Consensus',
     title: 'Raft Consensus Protocol: Leader Election & Log Replication Invariants',
     author: 'Amrit Raj Anmol',
-    authorSrn: 'PES2UG24CS056',
     version: 2,
     updatedAt: '2026-10-27 18:24:10 UTC',
     rating: 5.0,
@@ -148,12 +146,11 @@ If two logs contain an entry with the same index and term:
     topic: 'Layered Architecture',
     title: 'Strict 3-Layered Architecture vs Architectural Erosion in Enterprise Systems',
     author: 'A Sheiman Joshi',
-    authorSrn: 'PES2UG24CS003',
     version: 1,
     updatedAt: '2026-10-23 16:05:00 UTC',
     rating: 4.8,
     ratingCount: 19,
-    tags: ['ARCHITECTURE', 'LAB SPEC'],
+    tags: ['ARCHITECTURE', 'VERIFIED'],
     summary: 'Decoupling presentation from data persistence via strict service contracts and interface isolation.',
     content: `## 1. Architectural Definition and Layer Invariants
 
@@ -185,7 +182,7 @@ Architectural erosion occurs when dependencies bypass intermediate layers:
         version: 1,
         author: 'A Sheiman Joshi',
         timestamp: '2026-10-23 16:05:00 UTC',
-        summary: 'Approved SAD baseline release for CSQP evaluation',
+        summary: 'Approved architectural baseline release for collaborative evaluation',
         hash: 'b821d75'
       }
     ]

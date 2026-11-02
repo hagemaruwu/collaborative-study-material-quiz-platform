@@ -142,11 +142,11 @@ export default function ReaderPage({
 
             <div className="flex items-center gap-1 text-[#0047FF] font-semibold">
               <ShieldCheck className="w-4 h-4" />
-              <span>Verified PESU Curriculum Module</span>
+              <span>Verified Curriculum Module</span>
             </div>
           </div>
 
-          {/* Interactive Peer Rating Widget (TC-MAT-07) */}
+          {/* Interactive Peer Rating Widget */}
           <div className="pt-3 border-t border-[#DDE1E5] flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
             <div className="flex items-center gap-3">
               <span className="text-[#5A626A] font-medium">Peer Accuracy Rating:</span>
@@ -330,7 +330,7 @@ export default function ReaderPage({
         </div>
       </section>
 
-      {/* Peer Discussion Thread (TC-MAT-08) */}
+      {/* Peer Discussion Thread */}
       <section className="border border-[#DDE1E5] bg-[#FFFFFF] p-6 sm:p-8 space-y-4">
         <div className="flex items-center justify-between border-b border-[#DDE1E5] pb-3">
           <div className="flex items-center gap-2">
