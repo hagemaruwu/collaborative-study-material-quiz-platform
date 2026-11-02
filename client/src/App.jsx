@@ -11,6 +11,8 @@ import AboutPage from './pages/AboutPage';
 
 import RevisionModal from './components/RevisionModal';
 import UploadModal from './components/UploadModal';
+import AuthModal from './components/AuthModal';
+import UserProfileModal from './components/UserProfileModal';
 
 import { ACADEMIC_SUBJECTS, INITIAL_DOCUMENTS } from './data/documents';
 import { INITIAL_QUIZZES, INITIAL_LEADERBOARD } from './data/quizzes';
@@ -115,6 +117,8 @@ export default function App() {
   // Modals State
   const [isRevisionModalOpen, setIsRevisionModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [revisionTargetDoc, setRevisionTargetDoc] = useState(null);
 
   // Authenticate against backend
@@ -130,15 +134,69 @@ export default function App() {
       });
       if (res.ok) {
         const data = await res.json();
-        setCurrentUser({
-          username: data.user.username,
-          role: data.user.role
-        });
+        setCurrentUser(data.user);
       }
     } catch (e) {
       console.warn('Backend login fallback:', e.message);
     }
   }, []);
+
+  // Custom User Login Handler
+  const handleLogin = async (username, password) => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setCurrentUser(data.user);
+        setActiveRole(data.user.role);
+        if (data.user.role === 'Administrator') {
+          fetchAuditLogs();
+        }
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || 'Authentication failed' };
+      }
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  // Custom User Registration Handler
+  const handleRegister = async (username, password) => {
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        return await handleLogin(username, password);
+      } else {
+        return { success: false, error: data.error || 'Registration failed' };
+      }
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  // User Logout Handler
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (_) {}
+    setCurrentUser(null);
+    setActiveRole('Student/User');
+  };
 
   // Fetch audit logs if admin
   const fetchAuditLogs = useCallback(async () => {
@@ -165,8 +223,20 @@ export default function App() {
 
   // Load backend data on startup
   useEffect(() => {
-    // 1. Initial Login
-    authenticateRole(activeRole);
+    // 1. Initial Session Check (CSQP-SR-005)
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.user) {
+          setCurrentUser(data.user);
+          setActiveRole(data.user.role);
+        } else {
+          authenticateRole(activeRole);
+        }
+      })
+      .catch(() => {
+        authenticateRole(activeRole);
+      });
 
     // 2. Fetch Subjects & Topics Hierarchy
     fetch('/api/materials/hierarchy')
@@ -337,6 +407,10 @@ export default function App() {
 
   // Rate Document Handler
   const handleRateDocument = async (docId, stars) => {
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     setUserRatings((prev) => ({
       ...prev,
       [docId]: stars
@@ -398,6 +472,10 @@ export default function App() {
 
   // Add Comment Handler
   const handleAddComment = async (docId, text) => {
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     const newComment = {
       id: Date.now(),
       author: currentUser.username,
@@ -436,6 +514,10 @@ export default function App() {
 
   // Open Revision Modal
   const handleOpenRevisionModal = (doc) => {
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     setRevisionTargetDoc(doc || activeDoc);
     setIsRevisionModalOpen(true);
   };
@@ -714,7 +796,17 @@ export default function App() {
         onNavigate={(page) => navigateTo(page)}
         activeRole={activeRole}
         onRoleChange={handleRoleChange}
-        onOpenUpload={() => setIsUploadModalOpen(true)}
+        onOpenUpload={() => {
+          if (!currentUser) {
+            setIsAuthModalOpen(true);
+          } else {
+            setIsUploadModalOpen(true);
+          }
+        }}
+        currentUser={currentUser}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Main Page Content Body */}
@@ -739,7 +831,13 @@ export default function App() {
             onSelectSubject={setSelectedSubject}
             selectedTag={selectedTag}
             onSelectTag={setSelectedTag}
-            onOpenUpload={() => setIsUploadModalOpen(true)}
+            onOpenUpload={() => {
+          if (!currentUser) {
+            setIsAuthModalOpen(true);
+          } else {
+            setIsUploadModalOpen(true);
+          }
+        }}
             onOpenRevision={handleOpenRevisionModal}
           />
         )}
@@ -804,6 +902,25 @@ export default function App() {
         onClose={() => setIsUploadModalOpen(false)}
         onUpload={handleUploadDocument}
         subjects={subjects}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+      />
+
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onOpenAuth={() => {
+          setIsProfileModalOpen(false);
+          setIsAuthModalOpen(true);
+        }}
+        onNavigate={(page) => navigateTo(page)}
       />
     </div>
   );

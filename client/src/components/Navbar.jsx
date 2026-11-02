@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { BookOpen, Award, Trophy, Shield, Info, FileUp, Menu, X, Check } from 'lucide-react';
+import { BookOpen, Award, Trophy, Shield, Info, FileUp, Menu, X, Check, User, Lock, LogOut } from 'lucide-react';
 
 export default function Navbar({
   activePage,
   onNavigate,
   activeRole,
   onRoleChange,
-  onOpenUpload
+  onOpenUpload,
+  currentUser,
+  onOpenAuth,
+  onOpenProfile,
+  onLogout
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -69,9 +73,9 @@ export default function Navbar({
           })}
         </nav>
 
-        {/* Right Action & Role Switcher */}
+        {/* Right Action & Auth Controls */}
         <div className="hidden lg:flex items-center gap-3 font-sans text-xs">
-          {/* Role Selector */}
+          {/* Role Quick Switcher */}
           <div className="flex items-center border border-[#DDE1E5] bg-[#F8F9FA] p-0.5">
             <span className="px-2 text-[11px] text-[#5A626A] uppercase font-medium">ROLE:</span>
             {roles.map((r) => {
@@ -91,6 +95,29 @@ export default function Navbar({
               );
             })}
           </div>
+
+          {/* User Account / Login Button */}
+          {currentUser ? (
+            <button
+              onClick={onOpenProfile}
+              className="flex items-center gap-2 px-3 py-1.5 border border-[#DDE1E5] bg-[#FFFFFF] hover:border-[#0047FF] transition-colors group"
+            >
+              <div className="w-5 h-5 bg-[#0047FF] text-white flex items-center justify-center font-mono font-bold text-[10px]">
+                {currentUser.username.substring(0, 1).toUpperCase()}
+              </div>
+              <span className="font-semibold text-[#111315] group-hover:text-[#0047FF]">
+                {currentUser.username}
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={onOpenAuth}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-[#DDE1E5] bg-[#FFFFFF] text-[#111315] font-semibold text-xs hover:border-[#0047FF] hover:text-[#0047FF] transition-colors"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#0047FF]" />
+              <span>Sign In / Register</span>
+            </button>
+          )}
 
           {/* Upload Button */}
           <button
@@ -133,7 +160,45 @@ export default function Navbar({
             ))}
           </div>
 
-          <div className="pt-3 border-t border-[#DDE1E5]">
+          {/* Mobile Auth Button */}
+          <div className="pt-2 border-t border-[#DDE1E5]">
+            {currentUser ? (
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => {
+                    onOpenProfile();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 font-semibold text-xs text-[#111315]"
+                >
+                  <User className="w-4 h-4 text-[#0047FF]" />
+                  <span>Profile: {currentUser.username}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-xs text-[#D0021B] font-semibold flex items-center gap-1"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  onOpenAuth();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full py-2 border border-[#0047FF] text-[#0047FF] text-xs font-semibold text-center"
+              >
+                Sign In / Register
+              </button>
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-[#DDE1E5]">
             <span className="text-xs text-[#5A626A] uppercase block mb-1.5 font-medium">Switch Role:</span>
             <div className="grid grid-cols-3 gap-1">
               {roles.map((r) => (
