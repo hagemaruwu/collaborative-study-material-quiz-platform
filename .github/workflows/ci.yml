@@ -102,7 +102,7 @@ jobs:
       - name: Prepare Clean Application Artifact Bundle
         run: |
           mkdir -p build/csqp-release
-          cp -r server.js package.json package-lock.json db/ routes/ services/ public/ docs/ scripts/ build/csqp-release/
+          cp -r server.js package.json package-lock.json node_modules db/ routes/ services/ public/ docs/ scripts/ build/csqp-release/
           cd build && tar -czf csqp-release-v1.0.tar.gz csqp-release/
 
       - name: Upload Build Artifact
